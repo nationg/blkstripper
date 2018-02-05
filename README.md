@@ -1,1 +1,253 @@
-# blkstripper
+<!DOCTYPE HTML>
+<head>
+
+<link href="https://fonts.googleapis.com/css?family=Oxygen|Source+Sans+Pro" rel="stylesheet">
+<style>
+	body {
+		background-color:#E68364;
+		background-color:#DADFE1;
+		font-family: 'Source Sans Pro', sans-serif;
+		margin:0;
+		overflow-x:hidden;
+		
+	}
+	textarea{
+		background-color:#ECF0F1;
+		border: none;
+		width: 89%;
+		height: 300px;
+		margin-bottom: 20px;
+
+	}
+	#header{
+		font-size:200%;
+		font-weight: bold;
+		text-align: center;
+		background-color:#E68364;
+		background-color:#DADFE1;
+		width: 100%;
+		padding-top: 50px;
+		
+	}
+	#contain{
+		padding-top: 20px;
+		padding-bottom: 40px;
+		text-align:center;
+		margin:5%;
+		width:90%;
+		background-color:#DADFE1;
+		margin-bottom: 0px;
+	}	
+	#obslist{
+		padding-top: 0;
+		padding-bottom: 40px;
+		text-align:center;
+		margin:5%;
+		margin-top:0;
+		width:90%;
+		background-color:#DADFE1;
+	}	
+	.but{
+		background-color:#54ACD2;
+		color: white;
+		border: none;
+		padding: 20px 40px;
+		border-radius: 10px;
+	}
+	.but:hover{
+		background-color: #5991B1;
+	}
+
+	#test {
+		left: 5%;
+		background-color:#ECF0F1;
+		border: none;
+		width: 89%;
+		overflow-y: auto;
+		word-wrap:break-word
+	}
+	#blktable {
+		text-align:left;
+		width: 100%;
+	}
+	#newbutton {
+		text-align:center;
+		border-radius: 10px;
+
+	}
+
+
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script> localStorage.clear(); </script>
+</head>
+
+<body>
+	<div id=header>.BLK STRIPPER</div>
+	<div id="contain">
+	<form id="form">	
+	<textarea id="blkentry" rows="15" cols="100" type ="text" name="blk" size="200" placeholder ="Place unformatted ObsCatalogSet.blk, ObservationCatalog.blk, or UserDictionary.blk file here for the magic"></textarea><br>
+	<input type ="button" class="but" id="btn" value="List it!" onclick= "stripFunction(); return false;">
+	</form>
+	<input type="checkbox" onClick="toggle(this)" /> Toggle All<br/>
+	</div>
+
+	<div id="obslist">
+		<form id='obsetlist'>
+		<table id='blktable'></table>
+		<div id="newbutton"></div>
+		</form>
+	</div>
+<script>
+  function handleFileSelect(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    var files = evt.dataTransfer.files; // FileList object.
+    var reader = new FileReader();  
+    reader.onload = function(event) {            
+         document.getElementById('blkentry').value = event.target.result;
+    }        
+    reader.readAsText(files[0],"UTF-8");
+  }
+
+  function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+  }
+
+  // Setup the dnd listeners.
+  var dropZone = document.getElementById('blkentry');
+  dropZone.addEventListener('dragover', handleDragOver, false);
+  dropZone.addEventListener('drop', handleFileSelect, false);
+</script>
+
+<script>
+
+function stripFunction() {
+
+//Define Input/Start/End
+var startString = '[CChartDataRepository,BulkLoad(ObsCatalogSet,[CCV3ObsCatalogSet,Add(Name,"';
+var endString = '")(';   
+var inputString = document.getElementById('blkentry').value;
+
+//To find which blk is entered and define it as needed
+
+if (inputString.slice(0,42) == '[CChartDataRepository,BulkLoad(ObsCatalogS'){
+	startString = '[CChartDataRepository,BulkLoad(ObsCatalogSet,[CCV3ObsCatalogSet,Add(Name,"';
+} else if (inputString.slice(0,42) == '[CChartDataRepository,BulkLoad(ObsCatalogM'){
+	startString = '[CChartDataRepository,BulkLoad(ObsCatalogMasterItem,[CCV3ObsCatalogMasterItem,Add(Name,"';
+} else if (inputString.slice(0,42) == '[CChartDataRepository,BulkLoad(Dictionary,'){
+	startString = '[CChartDataRepository,BulkLoad(Dictionary,[CCV3UserDictionary,Add(IsActive,1)(Code,"';
+} else{
+	alert("Enter an unformatted ObsCatalogSet.blk/ObservationCatalog.blk/UserDictonary.blk here, not whatever it was you put...");
+};  
+//console.log(startString);
+
+//Define x and endIndex for while loop
+var x = inputString.indexOf(startString);
+var endIndex = inputString.indexOf(endString);
+var blkend = "])])]";
+
+
+while (x >= 0){ 
+
+var table =  document.getElementById('blktable');
+var row = table.insertRow(0);
+var cell1 = row.insertCell(0);
+
+    var end = inputString.indexOf(startString, x+1);
+if (end <0){
+    end = (inputString.lastIndexOf(blkend) + blkend.length);
+};
+    var name = inputString.slice((x + startString.length), endIndex);
+    var blk = inputString.slice(x, end);
+    var obSet = new Array(blk);
+
+// if (blk.includes("isactive,0"){
+//}
+
+
+//Send to Local Storage - Object of BLK Name and BLK itself
+    localStorage.setItem(name, JSON.stringify(obSet));
+
+//Insert into HTML table
+
+cell1.innerHTML = "<input type='checkbox' class='blkname' name = '" + name + "'>" + name;
+
+//make x = the next start string
+ x = inputString.indexOf(startString, (x+1));
+
+//make endstring index = next endstring
+endIndex = inputString.indexOf(endString, x);
+
+if (inputString.indexOf(endString, x) > endIndex) {
+    
+    endIndex = (inputString.lastIndexOf(endString) - (name.length + startString.length));
+   
+};
+
+//finish HTML form
+var container = document.getElementById("newbutton").innerHTML = "<tr><td><input id='newbutton' class='but' type ='submit' value='Click here for the blk stripping magic' onclick = 'writeblk(); return false;'></form></tr></td><div id='tester'><textarea id='test'></textarea></div>";
+
+document.getElementById('blktable').appendChild(document.getElementById('newbutton'));
+
+// disable button
+var btn = document.getElementById('btn');
+btn.disabled = true;
+
+};
+};  
+</script>
+
+
+
+<script>
+var totalblk = " ";
+function writeblk() {
+
+var selected = [];
+$('#obslist input:checked').each(function() {
+    selected.push($(this).attr('name'));
+});
+
+function writeit(){
+var totalblk = " ";
+for (i = 0; i < selected.length; i++) {
+	var item = selected[i];
+	var retrievedObject = localStorage.getItem(item);
+	var blkend = retrievedObject.length - 2;
+	var retrievedObject = retrievedObject.slice(2,blkend);
+	console.log(retrievedObject);
+	var totalblk = totalblk + retrievedObject;
+
+}
+
+var totalblk = totalblk.slice(1)
+document.getElementById('test').innerHTML = totalblk.replace(/\\/g, "");
+
+
+};
+writeit()
+};
+
+
+$("#newbutton").click(function(){
+    $("textarea").select();
+    document.execCommand('copy');
+});
+
+</script>
+
+
+<script>
+function toggle(source) {
+  checkboxes = document.getElementsByClassName('blkname');
+  for(var i=0, n=checkboxes.length;i<n;i++) {
+    checkboxes[i].checked = source.checked;
+  }
+}
+</script>
+</body>
+</HTML>
