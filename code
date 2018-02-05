@@ -140,8 +140,10 @@ if (inputString.slice(0,42) == '[CChartDataRepository,BulkLoad(ObsCatalogS'){
 	startString = '[CChartDataRepository,BulkLoad(ObsCatalogMasterItem,[CCV3ObsCatalogMasterItem,Add(Name,"';
 } else if (inputString.slice(0,42) == '[CChartDataRepository,BulkLoad(Dictionary,'){
 	startString = '[CChartDataRepository,BulkLoad(Dictionary,[CCV3UserDictionary,Add(IsActive,1)(Code,"';
+} else if (inputString.slice(0,41) == '[CChartDataRepository,BulkLoad(Flowsheet,'){
+	startString = '[CChartDataRepository,BulkLoad(Flowsheet,[CCV3Flowsheet,Add(Name,"';
 } else{
-	alert("Enter an unformatted ObsCatalogSet.blk/ObservationCatalog.blk/UserDictonary.blk here, not whatever it was you put...");
+	alert("Enter an unformatted ObsCatalogSet.blk/ObservationCatalog.blk/UserDictonary.blk/Flowsheet.blk here, not whatever it was you put...");
 };  
 //console.log(startString);
 
